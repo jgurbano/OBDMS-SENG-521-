@@ -49,7 +49,7 @@ database.listDatabases().then(function(data){
 	console.log("Error has occured while listing databases");
 });
 
-var checkForUser = function(username, password, successCallback, failureCallback, res){
+var checkForUser = function(username, password, successCallback, failureCallback, req, res){
 	if (typeof failureCallback != "function" || typeof successCallback != "function"){
 		console.log("Error: please pass in success and failure callback functions");
 		return;
@@ -59,7 +59,7 @@ var checkForUser = function(username, password, successCallback, failureCallback
 		for (var key in usernames){
 			var user = usernames[key];
 			if (user['username'] == username && user['password'] == password){
-				successCallback(res);
+				successCallback(req, res);
 				return;
 			}
 		}
