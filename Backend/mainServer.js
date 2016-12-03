@@ -30,6 +30,27 @@ webServer.get('/login', function(req, res){
 	res.sendFile(webpagePath + "/login.html");
 })
 
+/**
+ * Check if username and password are valid
+ */
+webServer.post('/authenticate', function(req, res){
+	var username = req.query.username;
+	var password = req.query.password;
+	
+	var success = function(res){
+		res.sendStatus(200);
+	}
+	
+	var failure = function(res){
+		res.sendStatus(404);
+	}
+
+	// authenticate username & password with database
+	// if successful redirect to main.html
+	// if not send back failed
+	database.checkForUser(username, password, success, failure, res);
+	});
+
 webServer.listen(8080, function(){
 	systemStatus('server is listening at 8080');
 });

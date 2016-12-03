@@ -49,6 +49,29 @@ database.listDatabases().then(function(data){
 	console.log("Error has occured while listing databases");
 });
 
+var checkForUser = function(username, password, successCallback, failureCallback, res){
+	if (typeof failureCallback != "function" || typeof successCallback != "function"){
+		console.log("Error: please pass in success and failure callback functions");
+		return;
+	}
+	database.get(databaseName, loginDocument).then(({data, headers, status}) => {
+		var usernames = data['usersnames'];
+		for (var key in usernames){
+			var user = usernames[key];
+			if (user['username'] == username && user['password'] == password){
+				successCallback(res);
+				return;
+			}
+		}
+		failureCallback(res);
+	}, err => {
+		failureCallback(res);
+		systemStatus("Something went wrong while loading login document");
+	});
+}
+
 function systemStatus(message){
 	console.log("----> " + message);
 }
+
+module.exports.checkForUser = checkForUser;
