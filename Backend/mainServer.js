@@ -2,6 +2,7 @@ var express = require('express');
 var webServer = express();
 var path = require("path");
 var webpagePath = path.join(__dirname, "../Frontend");
+var database = require("./database");
 
 /* Webpage is hosted at 8080 */
 
