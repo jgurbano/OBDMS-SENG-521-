@@ -6,6 +6,20 @@ var database = require("./database");
 
 /* Webpage is hosted at 8080 */
 
+/**
+ * Middleware to check if user is logged in before returning response
+ */
+webServer.use(function(req, res, next){
+	var redirected = req.query.redirected;
+	var logged = req.query.logged;
+	// Add contidion to check if user is logged in
+	if (logged || redirected){
+		next();
+	} else {
+		res.redirect('/login?redirected=true');
+	}
+});
+
 webServer.use(express.static(webpagePath));
 
 webServer.get('/', function(req, res){
