@@ -8,6 +8,7 @@ var database = new CouchDB({
 });
 var databaseName = 'seng521';
 var loginDocument = '001';
+var dataDocument = '002';
 var usersnames = {
 	"user1": {
 		"username": "driver1",
@@ -39,6 +40,15 @@ database.listDatabases().then(function(data){
 				systemStatus("Added users");
 			}, err => {
 				systemStatus("Error in creating users document");
+			});
+			
+			// create document file
+			database.insert(databaseName, {
+				_id: dataDocument
+			}).then((data, headers, status) => {
+				systemStatus("Created data document");
+			}, err => {
+				systemStatus("Error in creating data document");
 			})
 		}, err => {
 			systemStatus("Couldn't create database: " + databaseName);
@@ -52,7 +62,7 @@ database.listDatabases().then(function(data){
 var checkForUser = function(username, password, successCallback, failureCallback, req, res){
 	if (typeof failureCallback != "function" || typeof successCallback != "function"){
 		console.log("Error: please pass in success and failure callback functions");
-		return;
+		res.sendStatus(400);
 	}
 	database.get(databaseName, loginDocument).then(({data, headers, status}) => {
 		var usernames = data['usersnames'];
@@ -70,8 +80,43 @@ var checkForUser = function(username, password, successCallback, failureCallback
 	});
 }
 
+var updateData = function(dataFromRaspPi, successCallback, failureCallback, res){
+	database.get(databaseName, dataDocument).then(({data, headers, status}) => {
+		var rev = data["_rev"];
+		var updatedData = data["data"];
+		if (!updatedData){
+			updatedData = {};
+		}
+		
+		var unitToUpdate = updatedData[dataFromRaspPi["unit"]];
+		if (!unitToUpdate){
+			unitToUpdate = {};
+		}
+		
+		unitToUpdate[dataFromRaspPi["time"]] = dataFromRaspPi["codes"];
+		updatedData[dataFromRaspPi["unit"]] = unitToUpdate;
+		
+		//update document with data from raspberry pi
+		database.update(databaseName, {
+			_id: dataDocument,
+			_rev: rev,
+			data: updatedData
+		}).then(({data, headers, status}) => {
+			systemStatus("Raspberry Pi data was successfully uploaded to database");
+			successCallback(res);
+		}, err => {
+			console.log("Something went wrong in updating data document");
+			failureCallback(res, "Something went wrong in updating data document");
+		});
+	}, err => {
+		console.log("Something went wrong in creating");
+		failureCallback(res, "Something went wrong in creating");
+	});
+}
+
 function systemStatus(message){
 	console.log("----> " + message);
 }
 
 module.exports.checkForUser = checkForUser;
+module.exports.updateData = updateData;

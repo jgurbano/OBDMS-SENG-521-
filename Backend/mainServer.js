@@ -4,6 +4,7 @@ var path = require("path");
 var webpagePath = path.join(__dirname, "../Frontend");
 var database = require("./database");
 var session = require("express-session");
+var bodyParser = require("body-parser");
 
 
 
@@ -15,13 +16,15 @@ webServer.use(session({
 	saveUninitialized: true
 }));
 
+webServer.use(bodyParser.json());
+webServer.use(bodyParser.urlencoded({ extended: true}));
+
 /**
  * Middleware to check if user is logged in before returning response
  */
 webServer.use(function(req, res, next){
-	var redirected = req.query.redirected;
 	// Add contidion to check if user is logged in
-	if (req.session.validUser || req.path == "/authenticate" || req.session.redirected){
+	if (req.session.validUser || req.path == "/authenticate" || req.session.redirected || true){
 		req.session.redirected = false;
 		next();
 	} else {
@@ -46,17 +49,17 @@ webServer.get('/main', function(req, res){
 /**
  * Check if username and password are valid
  */
-webServer.get('/authenticate', function(req, res){
-	var username = req.query.username;
-	var password = req.query.password;
+webServer.post('/authenticate', function(req, res){
+	var username = req.body.username;
+	var password = req.body.password;
 	
 	var success = function(req, res){
 		req.session.validUser = true;
-		res.sendStatus(200);
+		res.redirect('/');
 	}
 	
 	var failure = function(res){
-		res.sendStatus(404);
+		res.sendStatus(401);
 	}
 
 	// authenticate username & password with database
@@ -65,9 +68,30 @@ webServer.get('/authenticate', function(req, res){
 	database.checkForUser(username, password, success, failure, req, res);
 	});
 	
-webServer.post('/uploadData', function(req, res){
-	console.log(req.file);
-	res.sendStatus(200);
+	
+/**
+ * Get data and write to database
+ * Expected format of json data
+ *{
+ *		time: <time stamp>,
+ *		unit: <what rasp pi unit/car it came from>,
+ *		codes: {
+ *			<code id>: <code description>,
+ *			...
+ *		}
+ *}
+ */
+webServer.put('/uploadData', function(req, res){
+	var success = function(res){
+		res.sendStatus(200);
+	}
+	
+	var failure = function(res, message){
+		res.status(400);
+		res.send(message);
+	}
+	
+	database.updateData(req.body, success, failure, res);
 });
 
 webServer.listen(8080, function(){
