@@ -121,6 +121,15 @@ webServer.get('/userData', function(req, res){
 	database.getUserData(req.session.user, success, failure, res);
 });
 
+webServer.get('/map', function(req,res){
+	res.sendFile(webpagePath + "/map.html");
+	})
+	
+webServer.get('/trip', function(req,res){
+	var id = req.query.id;
+	
+	})
+
 webServer.listen(8080, function(){
 	systemStatus('server is listening at 8080');
 });

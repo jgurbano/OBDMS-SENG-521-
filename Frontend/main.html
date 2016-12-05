@@ -21,6 +21,7 @@
 				<div class="navbar-right">
 				<label>Welcome, <label id='name'></label></label>
 					<button type='submit' id='logoutBtn'class="btn btn-default navbar-btn">Log out</button>
+					<button type='submit' id='mapBtn'class="btn btn-default navbar-btn">view map</button>
 				</div>
 			</div>
 		</nav>
@@ -38,6 +39,10 @@
 						window.location.href = '/';
 					}
 				});
+			});
+			
+			$("#mapBtn").click(function(){
+				window.location.href = '/map';
 			});
 			
 			$(document).ready(function(){

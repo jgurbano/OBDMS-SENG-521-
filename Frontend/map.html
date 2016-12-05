@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+		position: absolute;
+	    left: 0;
+		top: 0;
+        height: 100%;
+		width:70%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+		html, body {
+        height: 100%;
+        margin: 0;
+      }
+	  
+	  #sidePanel{
+		
+		margin-left: 70%;
+	  }
+    </style>
+  </head>
+  <body>
+	<div id="sidePanel">
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				 <div class="navbar-header">
+					<a class="navbar-brand" href='/'>OBDMS</a>
+				 </div>
+				
+				<div class="navbar-right">
+				<label>Welcome, <label id='name'></label></label>
+					<button type='submit' id='logoutBtn'class="btn btn-default navbar-btn">Log out</button>
+					<button type='submit' id='mainBtn'class="btn btn-default navbar-btn">main</button>
+				</div>
+			</div>
+	</nav>
+		<!--<p>please enter trip id</p>
+		<input type="input" name="id" value="" id="ID" />
+		<button onClick= "handleClick()">update</button>-->
+	</div>
+    <div id="map"></div>
+    <script>
+      var map;
+	  var markers = [];
+	 
+	$("#mainBtn").click(function(){
+				window.location.href = '/main';
+			});
+	  
+	function handleClick()
+    {
+        var id = document.getElementById("ID").value;
+		loadDoc(id);
+    }
+	  
+	function loadDoc(id) {
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var json = JSON.parse(this.responseText);
+				clearMarkers();
+				for(var i = 0; i < json.trip.length; i++)
+				{
+					labelNumber = i+1;
+					if(i == 0)
+						addMarker(json.trip[i].lat,json.trip[i].lng , 'start');
+					else if( i == json.trip.length - 1)
+						addMarker(json.trip[i].lat,json.trip[i].lng , 'end');
+					else
+						addMarker(json.trip[i].lat,json.trip[i].lng , labelNumber.toString());
+				}
+			}
+		};
+		xhttp.open("GET", "trip?id=" + id.toString(), true);
+		xhttp.send();
+	}
+
+	function clearMarkers(){
+		for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+        }
+		markers = [];
+	}
+	
+	function addMarker(coord1, coord2, number){
+		var latLng = new google.maps.LatLng(coord1,coord2);
+		markers.push( new google.maps.Marker({
+            position: latLng,
+			label: number,
+            map: map
+          }));
+	  }
+	  
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 2,
+          center: new google.maps.LatLng(0,0),
+          mapTypeId: 'terrain'
+        });
+	}
+	
+    </script>
+    <script async defer 
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtqV9TLOs5g4eLdavhs661Xwj38RgGvDM&callback=initMap">
+		//google API key AIzaSyDtqV9TLOs5g4eLdavhs661Xwj38RgGvDM
+    </script>
+  </body>
+</html>
