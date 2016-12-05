@@ -1,8 +1,55 @@
 <html>
 	<head>
 		<title> Main </title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				 <div class="navbar-header">
+					<a class="navbar-brand" href='/'>OBDMS</a>
+				 </div>
+				
+				<div class="navbar-right">
+				<label>Welcome, <label id='name'></label></label>
+					<button type='submit' id='logoutBtn'class="btn btn-default navbar-btn">Log out</button>
+				</div>
+			</div>
+		</nav>
+		
 	</head>
-	<body>
-		<h1> Main </h1>
+	<body style="margin-top: 100px">
+		<div id="userData">Hello</div>
+	
+		<script>
+			var userInfo;
+			
+			$("#logoutBtn").click(function(){
+				$.post('/logout', function(data){
+					if (data == 'OK'){
+						window.location.href = '/';
+					}
+				});
+			});
+			
+			$(document).ready(function(){
+				$.get('/userInfo', function(data){
+					userInfo = data;
+					$("#name").text(userInfo['name']);
+				});
+				
+				$.get('/userData', function(data){
+					$("#userData")[0].innerHTML = JSON.stringify(data, null, '\t');
+				});
+			});
+		</script>
 	</body>
 </html>

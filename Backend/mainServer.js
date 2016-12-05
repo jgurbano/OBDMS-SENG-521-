@@ -24,7 +24,7 @@ webServer.use(bodyParser.urlencoded({ extended: true}));
  */
 webServer.use(function(req, res, next){
 	// Add contidion to check if user is logged in
-	if (req.session.validUser || req.path == "/authenticate" || req.session.redirected || true){
+	if (req.session.validUser || req.path == "/authenticate" || req.path == '/uploadData' || req.session.redirected){
 		req.session.redirected = false;
 		next();
 	} else {
@@ -53,8 +53,10 @@ webServer.post('/authenticate', function(req, res){
 	var username = req.body.username;
 	var password = req.body.password;
 	
-	var success = function(req, res){
+	var success = function(req, res, user){
+		delete user["password"];
 		req.session.validUser = true;
+		req.session.user = user;
 		res.redirect('/');
 	}
 	
@@ -67,7 +69,11 @@ webServer.post('/authenticate', function(req, res){
 	// if not send back failed
 	database.checkForUser(username, password, success, failure, req, res);
 	});
-	
+
+webServer.post('/logout', function(req, res){
+	req.session.destroy();
+	res.sendStatus(200);
+});
 	
 /**
  * Get data and write to database
@@ -82,6 +88,11 @@ webServer.post('/authenticate', function(req, res){
  *}
  */
 webServer.put('/uploadData', function(req, res){
+	
+	if (!(req.body["time"] && req.body["unit"] && req.body["codes"])){
+		res.status(400).send("Data doesn't match the schema...");
+		return;
+	}
 	var success = function(res){
 		res.sendStatus(200);
 	}
@@ -92,6 +103,22 @@ webServer.put('/uploadData', function(req, res){
 	}
 	
 	database.updateData(req.body, success, failure, res);
+});
+
+webServer.get('/userInfo', function(req, res){
+	res.status(200).json(req.session.user);
+});
+
+webServer.get('/userData', function(req, res){
+	var success = function(data, response){
+		res.status(200).json(data);
+	}
+	
+	var failure = function(res, message){
+		res.status(400).send(message);
+	}
+	
+	database.getUserData(req.session.user, success, failure, res);
 });
 
 webServer.listen(8080, function(){

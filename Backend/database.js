@@ -9,17 +9,20 @@ var database = new CouchDB({
 var databaseName = 'seng521';
 var loginDocument = '001';
 var dataDocument = '002';
+var roleDriver = 'driver';
+var roleManager = 'manager';
 var usersnames = {
 	"user1": {
 		"username": "driver1",
 		"name": "Driver1",
-		"role": "driver",
+		"role": roleDriver,
 		"password": "password"
 	},
 	"user2": {
 		"username": "manager1",
 		"name": "Manager1",
-		"role": "manager",
+		"role": roleManager,
+		"drivers": ["driver1"],
 		"password": "password"
 	}
 };
@@ -69,7 +72,7 @@ var checkForUser = function(username, password, successCallback, failureCallback
 		for (var key in usernames){
 			var user = usernames[key];
 			if (user['username'] == username && user['password'] == password){
-				successCallback(req, res);
+				successCallback(req, res, user);
 				return;
 			}
 		}
@@ -114,9 +117,34 @@ var updateData = function(dataFromRaspPi, successCallback, failureCallback, res)
 	});
 }
 
+var getUserData = function(userInfo, successCallback, failureCallback, res){
+	//get document
+	database.get(databaseName, dataDocument).then(({data, headers, status}) => {
+		var dataObj = data['data'];
+		var returnData = {};
+		var usersToLookFor;
+		if (userInfo["role"] == roleDriver){
+			usersToLookFor = userInfo["username"];
+			returnData[usersToLookFor] = dataObj[usersToLookFor];
+		} else {
+			usersToLookFor = userInfo["drivers"];
+			console.log(usersToLookFor);
+			for (var i in usersToLookFor){
+				var user = usersToLookFor[i];
+				returnData[user] = dataObj[user];
+			}
+		}
+		successCallback(returnData, res);
+	}, err => {
+		failureCallback(res, "Something went wrong while getting user data");
+		systemStatus("Something went wrong while getting user data");
+	});
+}
+
 function systemStatus(message){
 	console.log("----> " + message);
 }
 
 module.exports.checkForUser = checkForUser;
 module.exports.updateData = updateData;
+module.exports.getUserData = getUserData;
