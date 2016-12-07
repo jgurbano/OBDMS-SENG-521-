@@ -126,8 +126,13 @@ webServer.get('/map', function(req,res){
 	})
 	
 webServer.get('/trip', function(req,res){
-	var id = req.query.id;
+	var date = req.query.date;
 	
+	var callback = function( res, data){
+		res.status(200).json(data);
+	}
+	
+	database.getTripData(date, req.session.user['username'], res, callback);
 	})
 
 webServer.listen(8080, function(){

@@ -27,6 +27,31 @@ var usersnames = {
 	}
 };
 
+var tripsDocument = '003';
+var tripsData = {
+	"trips":[
+		{
+			"username": "driver1", 
+			"startDate": "02/03/2016",
+			"trip":[
+			{"lat": "1", "lng": "1"},
+			{"lat": "2", "lng": "2"},
+			{"lat": "10", "lng": "10"},
+			{"lat": "20", "lng": "20"},
+			]
+		},
+		{
+			"username":"driver2", 
+			"startDate": "01/24/2016",
+			"trip":[
+			{"lat":"50", "lng":"1"},
+			{"lat":"60", "lng":"2"},
+			{"lat":"1", "lng":"50"}
+			]
+		}
+		]
+};
+
 /**
  *	Check if database exists, if not create database and add users
  */
@@ -52,6 +77,16 @@ database.listDatabases().then(function(data){
 				systemStatus("Created data document");
 			}, err => {
 				systemStatus("Error in creating data document");
+			})
+			
+			// create trips file
+			database.insert(databaseName, {
+				_id: tripsDocument,
+				tripsData
+			}).then((data, headers, status) => {
+				systemStatus("Created trips document");
+			}, err => {
+				systemStatus("Error in creating trips document");
 			})
 		}, err => {
 			systemStatus("Couldn't create database: " + databaseName);
@@ -141,6 +176,25 @@ var getUserData = function(userInfo, successCallback, failureCallback, res){
 	});
 }
 
+var getTripData = function(date, username, res, callback){
+	database.get(databaseName, tripsDocument).then(({data, headers, status}) => {
+		var trips = data['tripsData']['trips'];
+		var trip;
+		var returnData = {};
+		for(var i in trips)
+		{
+			tripData = trips[i];
+			if(tripData['username'] == username && tripData['startDate'] == date)
+			{
+				returnData = tripData['trip'];
+			}
+		}
+		callback( res, returnData);
+	}, err => {
+		systemStatus("Something went wrong while loading trip document");
+	});
+}
+
 function systemStatus(message){
 	console.log("----> " + message);
 }
@@ -148,3 +202,4 @@ function systemStatus(message){
 module.exports.checkForUser = checkForUser;
 module.exports.updateData = updateData;
 module.exports.getUserData = getUserData;
+module.exports.getTripData = getTripData;

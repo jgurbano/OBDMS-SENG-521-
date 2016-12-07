@@ -28,29 +28,32 @@
       }
 	  
 	  #sidePanel{
-		
+		position: absolute;
+	    left: 0;
+		top: 0;
 		margin-left: 70%;
+		padding-top: 10%;
 	  }
     </style>
   </head>
   <body>
-	<div id="sidePanel">
-		<nav class="navbar navbar-default navbar-fixed-top">
+	<nav class="navbar navbar-default navbar-fixed-top">
 			<div class="container">
 				 <div class="navbar-header">
 					<a class="navbar-brand" href='/'>OBDMS</a>
 				 </div>
 				
 				<div class="navbar-right">
-				<label>Welcome, <label id='name'></label></label>
+				<!--<label>Welcome, <label id='name'></label></label>-->
 					<button type='submit' id='logoutBtn'class="btn btn-default navbar-btn">Log out</button>
 					<button type='submit' id='mainBtn'class="btn btn-default navbar-btn">main</button>
 				</div>
 			</div>
 	</nav>
-		<!--<p>please enter trip id</p>
+	<div id="sidePanel">
+		<p>please enter date of trip</p>
 		<input type="input" name="id" value="" id="ID" />
-		<button onClick= "handleClick()">update</button>-->
+		<button onClick= "handleClick()">update</button>
 	</div>
     <div id="map"></div>
     <script>
@@ -60,6 +63,14 @@
 	$("#mainBtn").click(function(){
 				window.location.href = '/main';
 			});
+	
+	$("#logoutBtn").click(function(){
+				$.post('/logout', function(data){
+					if (data == 'OK'){
+						window.location.href = '/';
+					}
+				});
+			});
 	  
 	function handleClick()
     {
@@ -67,11 +78,12 @@
 		loadDoc(id);
     }
 	  
-	function loadDoc(id) {
+	function loadDoc(date) {
 		var xhttp = new XMLHttpRequest();
+		xhttp.responseType = 'json';
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var json = JSON.parse(this.responseText);
+				/*var json = JSON.parse(this.responseText);
 				clearMarkers();
 				for(var i = 0; i < json.trip.length; i++)
 				{
@@ -82,10 +94,25 @@
 						addMarker(json.trip[i].lat,json.trip[i].lng , 'end');
 					else
 						addMarker(json.trip[i].lat,json.trip[i].lng , labelNumber.toString());
+				}*/
+				var data = xhttp.response;
+				var count = 1;
+				clearMarkers();
+				for(var i in data)
+				{
+					var labelNumber = count - 1;
+					var point = data[i];
+					if(count == 1)
+						addMarker(point['lat'],point['lng'] , 'start');
+					else if(  count == data.length)
+						addMarker(point['lat'],point['lng'] , 'end');
+					else
+						addMarker(point['lat'],point['lng'] , labelNumber.toString());
+					count++;
 				}
 			}
 		};
-		xhttp.open("GET", "trip?id=" + id.toString(), true);
+		xhttp.open("GET", "trip?date=" + date.toString(), true);
 		xhttp.send();
 	}
 
