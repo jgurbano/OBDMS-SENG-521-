@@ -23,6 +23,7 @@
       }
       /* Optional: Makes the sample page fill the window. */
 		html, body {
+		background-color: #f1f1f1;
         height: 100%;
         margin: 0;
       }
@@ -33,6 +34,7 @@
 		top: 0;
 		margin-left: 70%;
 		padding-top: 10%;
+		padding-left: 5%;
 	  }
     </style>
   </head>
@@ -50,15 +52,37 @@
 				</div>
 			</div>
 	</nav>
+	<button data-toggle="collapse" data-target="#sidePanel">Collapsible</button>
+	<div id="map"></div>
 	<div id="sidePanel">
-		<p>please enter date of trip</p>
-		<input type="input" name="id" value="" id="ID" />
-		<button onClick= "handleClick()">update</button>
+		<h4 class="text-center"> Please enter date of the trip</h4>
+		<input type="input" class="form-control" name="date"  value="" id="date" placeholder = "mm/dd/yyyy" />
+		<button onClick= "handleClick()" class="btn btn-default btn-block">update</button>
+		<br>
+		<div id="dataDisplay"> </div>
+		<!--<button data-toggle="collapse" data-target="#dataTable">Collapsible</button>
+		<table class="table table-hover collapse" id="dataTable"></table>-->
 	</div>
-    <div id="map"></div>
+	
+	<!--<div class= "container">
+		<div class= "row">
+			<div class= "col-md-8">
+				<div id="map"></div>
+			</div>
+			<div class= "col-md-4">
+				<div id="sidePanel">
+					<p>please enter date of trip</p>
+					<input type="input" class="form-control" name="date"  value="" id="ID" placeholder = "mm/dd/yyyy" />
+					<button onClick= "handleClick()">update</button>
+				</div>
+			</div>
+			<!--<div id="map"></div> 
+		</div>
+	</div>-->
     <script>
       var map;
 	  var markers = [];
+	  var data;
 	 
 	$("#mainBtn").click(function(){
 				window.location.href = '/main';
@@ -74,7 +98,8 @@
 	  
 	function handleClick()
     {
-        var id = document.getElementById("ID").value;
+        var id = document.getElementById("date").value;
+		clearMarkers();
 		loadDoc(id);
     }
 	  
@@ -95,25 +120,68 @@
 					else
 						addMarker(json.trip[i].lat,json.trip[i].lng , labelNumber.toString());
 				}*/
-				var data = xhttp.response;
+				data = null;
+				data = xhttp.response;
+				/*var trip = data['trips'][0];
 				var count = 1;
 				clearMarkers();
-				for(var i in data)
+				for(var i in trip)
 				{
 					var labelNumber = count - 1;
-					var point = data[i];
+					var point = trip[i];
 					if(count == 1)
 						addMarker(point['lat'],point['lng'] , 'start');
-					else if(  count == data.length)
+					else if(  count == trip.length)
 						addMarker(point['lat'],point['lng'] , 'end');
 					else
 						addMarker(point['lat'],point['lng'] , labelNumber.toString());
 					count++;
-				}
+				}*/
+				insertDataIntoTable();
 			}
 		};
 		xhttp.open("GET", "trip?date=" + date.toString(), true);
 		xhttp.send();
+	}
+	
+	function insertDataIntoTable()
+	{
+		var dataDisplay = document.getElementById("dataDisplay")
+		while (dataDisplay.hasChildNodes()) {   
+			dataDisplay.removeChild(dataDisplay.firstChild);
+		}
+		var count = 1;
+		for(var j in data['trips'])
+		{
+			var button = document.createElement("button");
+			button.setAttribute("class", "btn btn-default btn-block");
+			button.setAttribute("data-toggle", "collapse");
+			button.setAttribute("data-target", "#dataTable" + count.toString());
+			button.setAttribute("onClick", "showTripOnMap(" + (count - 1).toString()+ ")");
+			var buttonText = document.createTextNode("Show Trip " + count.toString());
+			button.appendChild(buttonText);
+			document.getElementById("dataDisplay").appendChild( button);
+			count++;
+		}
+	}
+	
+	function showTripOnMap(tripNumber)
+	{
+		var trip = data['trips'][tripNumber];
+		var count = 1;
+		clearMarkers();
+			for(var i in trip)
+			{
+				var labelNumber = count - 1;
+				var point = trip[i];
+				if(count == 1)
+					addMarker(point['lat'],point['lng'] , 'start');
+				else if(  count == trip.length)
+					addMarker(point['lat'],point['lng'] , 'end');
+				else
+					addMarker(point['lat'],point['lng'] , labelNumber.toString());
+				count++;
+			}
 	}
 
 	function clearMarkers(){
@@ -139,7 +207,9 @@
           mapTypeId: 'terrain'
         });
 	}
-	
+	$(document).ready(function(){
+				$('#table').html('<h1>hello</h1>');
+			});
     </script>
     <script async defer 
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtqV9TLOs5g4eLdavhs661Xwj38RgGvDM&callback=initMap">

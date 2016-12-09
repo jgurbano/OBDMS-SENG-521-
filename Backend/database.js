@@ -48,6 +48,15 @@ var tripsData = {
 			{"lat":"60", "lng":"2"},
 			{"lat":"1", "lng":"50"}
 			]
+		},
+		{
+			"username":"driver1", 
+			"startDate": "02/03/2016",
+			"trip":[
+			{"lat":"50", "lng":"1"},
+			{"lat":"60", "lng":"2"},
+			{"lat":"1", "lng":"50"}
+			]
 		}
 		]
 };
@@ -181,12 +190,18 @@ var getTripData = function(date, username, res, callback){
 		var trips = data['tripsData']['trips'];
 		var trip;
 		var returnData = {};
+		///////
+		var count = 0;
+		returnData['trips'] = [];
+		///////
 		for(var i in trips)
 		{
 			tripData = trips[i];
 			if(tripData['username'] == username && tripData['startDate'] == date)
 			{
-				returnData = tripData['trip'];
+				//returnData = tripData['trip'];
+				returnData['trips'][count] = tripData['trip'];
+				count++;
 			}
 		}
 		callback( res, returnData);
